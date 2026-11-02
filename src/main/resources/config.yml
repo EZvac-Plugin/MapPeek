@@ -1,0 +1,23 @@
+# MapPeek: EZvac on your web map. Draws every weather station's coverage, the
+# area it measures, as a circle on squaremap.
+
+# How often the map is brought up to date, in seconds (10 or more).
+refresh-seconds: 60
+
+# The temperatures in a station's details: F or C.
+units: F
+
+stations:
+  # false leaves weather stations off the map.
+  enabled: true
+  # The layer's name in the map's layer list.
+  layer-name: Weather stations
+  # Whether the layer starts hidden until a viewer ticks it.
+  hidden-by-default: false
+  # Colours, as #RRGGBB: a working station, one switched off, a damaged one.
+  colors:
+    working: '#4FA3FF'
+    off: '#8A8F98'
+    damaged: '#E0A030'
+  # How solid a circle is filled, 0 to 1; its outline is always drawn.
+  fill-opacity: 0.12

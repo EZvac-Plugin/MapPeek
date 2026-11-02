@@ -1,0 +1,8 @@
+name: MapPeek
+version: '${project.version}'
+main: com.github.blade.mappeek.MapPeekPlugin
+api-version: '1.21'
+author: bladestech
+description: "MapPeek: EZvac on your web map. Weather station coverage on squaremap. An addon for EZvac."
+depend: [EZvac]
+softdepend: [squaremap]
