@@ -3,6 +3,15 @@ version: '${project.version}'
 main: com.github.blade.mappeek.MapPeekPlugin
 api-version: '1.21'
 author: bladestech
-description: "MapPeek: EZvac on your web map. Weather stations, the wind and air quality on squaremap. An addon for EZvac."
+description: "MapPeek: EZvac on your web map. Weather stations, the wind, air quality and the season on squaremap and BlueMap. An addon for EZvac."
 depend: [EZvac]
-softdepend: [squaremap]
+softdepend: [squaremap, BlueMap]
+commands:
+  mappeek:
+    description: "Opens MapPeek's menu: what the web map shows, and how often it is brought up to date. /mappeek reload reads config.yml again."
+    usage: "/mappeek [reload]"
+    permission: mappeek.admin
+permissions:
+  mappeek.admin:
+    description: "Change what MapPeek shows on the web map."
+    default: op

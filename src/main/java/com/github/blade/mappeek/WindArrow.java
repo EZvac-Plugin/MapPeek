@@ -41,6 +41,9 @@ public record WindArrow(double x, double z, double towardDegrees, Wind.Level lev
         return Character.toUpperCase(lower.charAt(0)) + lower.substring(1);
     }
 
+    /** A calm spot's dot is this share of the longest arrow across (0.2.0). */
+    public static final double CALM_DOT = 0.06;
+
     /** Whether there is an arrow to draw: some wind, with a direction. */
     public boolean drawn() {
         return level != Wind.Level.CALM && Double.isFinite(towardDegrees);

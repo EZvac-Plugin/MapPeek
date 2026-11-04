@@ -98,8 +98,9 @@ class StationMarkerTest {
         WeatherStationView view = new WeatherStationView("Harbour", new Position(WORLD, 631, -58, -20), true, true, 0,
                 70.0, forecast, 100, 20, new Wind(8.0, Wind.Level.WINDY, 270.0), Optional.of(air));
         StationMarker marker = StationMarker.of(view, true);
-        assertTrue(marker.details().contains("<br>Wind: Windy 29 km/h from the W<br>Air: AQI 42 (Good)"),
-                marker.details());
+        assertTrue(marker.details().contains("<br>Wind: Windy 29 km/h from the W<br>Air: <span"), marker.details());
+        assertTrue(marker.details().contains("color:#000;") && marker.details().contains("AQI 42</span> Good"),
+                "a Good badge in dark text on green: " + marker.details());
         assertTrue(marker.wind().drawn());
         assertEquals(90.0, marker.wind().towardDegrees(), 1e-9, "a west wind blows toward the east");
         StationMarker off = StationMarker.of(station("Hill", false, true, 0, ""), false);
@@ -129,10 +130,18 @@ class StationMarkerTest {
         AirQuality smoky = new AirQuality(60.0, 80.0, 10.0, 153, AirQuality.Band.UNHEALTHY, AirQuality.Pollutant.PM25,
                 AirQuality.PollenLevel.MODERATE);
         AirCell cell = AirCell.of(smoky, 128, -256, 256);
-        assertEquals(new Color(0xFF0000), cell.color());
-        assertEquals("AQI 153 (Unhealthy) · Pollen moderate", cell.tooltip());
-        assertEquals(new Color(0x00E400), AirCell.color(AirQuality.Band.GOOD));
+        assertEquals(AirCell.shade(153), cell.color(), "squares take the smooth scale");
+        assertEquals("AQI 153 (Unhealthy) · PM2.5 60 · PM10 80 µg/m³ · Pollen moderate", cell.tooltip());
+        assertEquals(new Color(0x00E400), AirCell.color(AirQuality.Band.GOOD), "popups keep the band's own");
         assertEquals(new Color(0x7E0023), AirCell.color(AirQuality.Band.HAZARDOUS));
+        // The smooth scale: each band's colour at its middle, blended between.
+        assertEquals(new Color(0x00E400), AirCell.shade(10));
+        assertEquals(new Color(0xFFFF00), AirCell.shade(75));
+        assertEquals(new Color(0xFF0000), AirCell.shade(175));
+        assertEquals(new Color(0x7E0023), AirCell.shade(450));
+        Color below = AirCell.shade(49), above = AirCell.shade(51);
+        assertTrue(Math.abs(below.getRed() - above.getRed()) < 15 && Math.abs(below.getGreen() - above.getGreen()) < 15,
+                "49 and 51 look alike: " + below + " " + above);
     }
 
     @Test

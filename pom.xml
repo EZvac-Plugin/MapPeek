@@ -22,7 +22,7 @@
     <properties>
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <!-- EZvac API 1.7, first in EZvac BETA 1.0 Pilot 2: a weather station's coverage. -->
+        <!-- EZvac API 1.8, first in EZvac BETA 1.0 Pilot 3: the wind's direction, the air anywhere. -->
         <ezvac.api.version>BETA-1.0-P3</ezvac.api.version>
     </properties>
 
@@ -35,6 +35,11 @@
         <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
+        </repository>
+        <!-- BlueMap's API (0.2.0): MapPeek draws on BlueMap too. -->
+        <repository>
+            <id>bluecolored</id>
+            <url>https://repo.bluecolored.de/releases</url>
         </repository>
     </repositories>
 
@@ -55,6 +60,12 @@
             <groupId>xyz.jpenilla</groupId>
             <artifactId>squaremap-api</artifactId>
             <version>1.4.3</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.bluecolored</groupId>
+            <artifactId>bluemap-api</artifactId>
+            <version>2.8.2</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

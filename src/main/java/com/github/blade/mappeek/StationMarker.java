@@ -18,9 +18,10 @@ import java.util.Objects;
  * @param hover    a line of plain text for hovering
  * @param details  HTML for clicking: the label, today's weather, wind and air, and its lightning strikes
  * @param wind     its wind right now as an arrow at its centre (0.2.0); calm when it has none to show
+ * @param y        its sign's height, for 3D maps (0.2.0)
  */
 public record StationMarker(String label, int x, int z, int radius, State state, String hover, String details,
-                            WindArrow wind) {
+                            WindArrow wind, int y) {
 
     /** What a station is doing, which colours its circle. */
     public enum State { WORKING, OFF, DAMAGED }
@@ -51,8 +52,21 @@ public record StationMarker(String label, int x, int z, int radius, State state,
             // Its wind and air right now (0.2.0, EZvac API 1.8): shown only where EZvac gives them.
             if (station.wind().hasDirection())
                 details.append("<br>Wind: ").append(WindArrow.describe(station.wind(), celsius));
-            station.airQuality().ifPresent(air -> details.append("<br>Air: AQI ").append(air.aqi()).append(" (")
-                    .append(AirCell.bandName(air.band())).append(")"));
+            station.airQuality().ifPresent(air -> details.append("<br>Air: ").append(badge(air.aqi(), air.band()))
+                    .append(" ").append(AirCell.bandName(air.band())));
+            // The days ahead, a line each (0.2.0).
+            int shown = 0;
+            for (WeatherStationView.ForecastDay day : station.forecast()) {
+                if (day.daysAhead() < 1 || shown == OUTLOOK_DAYS) continue;
+                if (shown++ == 0) details.append("<br><i>Outlook</i>");
+                details.append("<br>").append(day.daysAhead() == 1 ? "Tomorrow" : "In " + day.daysAhead() + " days")
+                        .append(": ").append(sky(day.sky())).append(" · ").append(degrees(day.highF(), celsius))
+                        .append("/").append(degrees(day.lowF(), celsius));
+                day.wind().filter(wind -> wind.level() != com.github.blade.hvac.api.Wind.Level.CALM)
+                        .ifPresent(wind -> details.append(" · ").append(WindArrow.name(wind.level()))
+                                .append(wind.compass().isEmpty() ? "" : " " + wind.compass()));
+                if (day.aqi() >= 0) details.append(" · ").append(badge(day.aqi(), AirCell.band(day.aqi())));
+            }
         } else {
             details.append("<br>").append(state == State.OFF ? "Switched off" : "Damaged: rebuild its tower");
         }
@@ -64,7 +78,18 @@ public record StationMarker(String label, int x, int z, int radius, State state,
         WindArrow wind = WindArrow.of(state == State.WORKING ? station.wind() : com.github.blade.hvac.api.Wind.CALM,
                 x + 0.5, z + 0.5, celsius);
         return new StationMarker(station.label(), x, z, station.areaRadius(), state,
-                station.label() + " · weather station" + status, details.toString(), wind);
+                station.label() + " · weather station" + status, details.toString(), wind, station.position().y());
+    }
+
+    /** How many days ahead a station's popup gives (0.2.0). */
+    static final int OUTLOOK_DAYS = 3;
+
+    /** {@code AQI 42} on its band's colour, in dark or light text to stand out (0.2.0). */
+    static String badge(int aqi, com.github.blade.hvac.api.AirQuality.Band band) {
+        java.awt.Color color = AirCell.color(band);
+        boolean light = color.getRed() * 0.299 + color.getGreen() * 0.587 + color.getBlue() * 0.114 > 120;
+        return String.format(Locale.US, "<span style=\"background:#%06X;color:%s;padding:0 4px;border-radius:3px\">"
+                + "AQI %d</span>", color.getRGB() & 0xFFFFFF, light ? "#000" : "#fff", aqi);
     }
 
     /** {@code 60°}: whole degrees, as a station's own screen shows them. */

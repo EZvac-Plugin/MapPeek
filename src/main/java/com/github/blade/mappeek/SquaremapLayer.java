@@ -73,6 +73,16 @@ final class SquaremapLayer implements MapLayer {
 
     SquaremapLayer(Settings settings) {
         this.settings = settings;
+        // The station icons, one per state (0.2.0).
+        for (StationMarker.State state : StationMarker.State.values()) {
+            Key key = icon(state);
+            if (squaremap.iconRegistry().hasEntry(key)) squaremap.iconRegistry().unregister(key);
+            squaremap.iconRegistry().register(key, StationIcon.image(settings.color(state)));
+        }
+    }
+
+    private static Key icon(StationMarker.State state) {
+        return Key.of("mappeek_station_" + state.name().toLowerCase(java.util.Locale.ROOT));
     }
 
     @Override
@@ -108,6 +118,14 @@ final class SquaremapLayer implements MapLayer {
                     .build());
             String id = station.x() + "_" + station.z();
             layer.addMarker(Key.of("station_" + id), circle);
+            // Its icon at the centre, easy to spot and to click (0.2.0).
+            Marker icon = Marker.icon(Point.of(station.x() + 0.5, station.z() + 0.5), icon(station.state()),
+                    StationIcon.SIZE - 8);
+            icon.markerOptions(MarkerOptions.builder()
+                    .hoverTooltip(StationMarker.escape(station.hover()))
+                    .clickTooltip(station.details())
+                    .build());
+            layer.addMarker(Key.of("station_icon_" + id), icon);
             if (settings.stationArrows()) {
                 Marker arrow = arrow(station.wind(), station.radius() * 0.8, 0.95);
                 if (arrow != null) layer.addMarker(Key.of("station_wind_" + id), arrow);
@@ -128,7 +146,8 @@ final class SquaremapLayer implements MapLayer {
         int index = 0;
         for (WindArrow wind : arrows) {
             Marker arrow = arrow(wind, longest, grid.opacity());
-            if (arrow != null) layer.addMarker(Key.of("wind_" + index++), arrow);
+            if (arrow == null) arrow = calm(wind, longest, grid.opacity());
+            layer.addMarker(Key.of("wind_" + index++), arrow);
         }
     }
 
@@ -153,6 +172,18 @@ final class SquaremapLayer implements MapLayer {
                     .build());
             layer.addMarker(Key.of("air_" + index++), square);
         }
+    }
+
+    /** A calm spot (0.2.0): a small grey dot, so the layer never looks empty when the air is still. */
+    private Marker calm(WindArrow wind, double longest, double opacity) {
+        Marker dot = Marker.circle(Point.of(wind.x(), wind.z()), Math.max(4.0, longest * WindArrow.CALM_DOT));
+        Color color = settings.color(wind.level());
+        dot.markerOptions(MarkerOptions.builder()
+                .strokeColor(color.darker()).strokeWeight(1).strokeOpacity(opacity)
+                .fillColor(color).fillOpacity(opacity * 0.8)
+                .hoverTooltip(StationMarker.escape(wind.tooltip()))
+                .build());
+        return dot;
     }
 
     /** An arrow's polygon, or null where there is none to draw. */
@@ -204,6 +235,8 @@ final class SquaremapLayer implements MapLayer {
             });
         }
         layers.clear();
+        for (StationMarker.State state : StationMarker.State.values())
+            if (squaremap.iconRegistry().hasEntry(icon(state))) squaremap.iconRegistry().unregister(icon(state));
         for (UUID id : clocks.keySet()) {
             World world = org.bukkit.Bukkit.getWorld(id);
             if (world == null) continue;

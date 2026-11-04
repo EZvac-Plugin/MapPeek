@@ -9,47 +9,75 @@ import java.util.function.Consumer;
 
 /**
  * MapPeek's config.yml. A value out of range keeps its default, with a
- * warning.
+ * warning. The /mappeek menu (0.2.0) changes config.yml and loads it again.
  *
- * @param refreshSeconds  how often the map is brought up to date
- * @param celsius         temperatures in a station's details in °C, and wind speeds in km/h (mph with °F)
- * @param stations        whether weather stations are drawn
- * @param layerName       the stations layer's name in the map's layer list
- * @param hiddenByDefault whether that layer starts hidden
- * @param working         a working station's colour
- * @param off             a switched-off station's colour
- * @param damaged         a damaged station's colour
- * @param fillOpacity     how solid a station's circle is filled, 0 to 1
- * @param stationArrows   whether each station shows its wind as an arrow (0.2.0)
- * @param breezy          a breezy wind's arrow colour (0.2.0)
- * @param windy           a windy one's
- * @param gale            a gale's
- * @param windLayer       the wind across the map (0.2.0)
- * @param airLayer        the air quality across the map (0.2.0)
- * @param clock           whether the layer list shows each world's time of day and season (0.2.0)
+ * @param refreshSeconds     how often stations, the air and the season are brought up to date
+ * @param windRefreshSeconds how often the wind is, arrows on stations included (0.2.0)
+ * @param celsius            temperatures in °C and wind speeds in km/h; °F and mph otherwise
+ * @param stations           whether weather stations are drawn
+ * @param layerName          the stations layer's name in the map's layer list
+ * @param hiddenByDefault    whether that layer starts hidden
+ * @param working            a working station's colour
+ * @param off                a switched-off station's colour
+ * @param damaged            a damaged station's colour
+ * @param fillOpacity        how solid a station's circle is filled, 0 to 1
+ * @param stationArrows      whether each station shows its wind as an arrow (0.2.0)
+ * @param breezy             a breezy wind's arrow colour (0.2.0)
+ * @param windy              a windy one's
+ * @param gale               a gale's
+ * @param windLayer          the wind across the map (0.2.0)
+ * @param airLayer           the air quality across the map (0.2.0)
+ * @param clock              whether the layer list shows each world's time of day and season (0.2.0)
  */
-public record Settings(int refreshSeconds, boolean celsius, boolean stations, String layerName, boolean hiddenByDefault,
-                       Color working, Color off, Color damaged, double fillOpacity, boolean stationArrows,
-                       Color breezy, Color windy, Color gale, Grid windLayer, Grid airLayer, boolean clock) {
+public record Settings(int refreshSeconds, int windRefreshSeconds, boolean celsius, boolean stations,
+                       String layerName, boolean hiddenByDefault, Color working, Color off, Color damaged,
+                       double fillOpacity, boolean stationArrows, Color breezy, Color windy, Color gale,
+                       Grid windLayer, Grid airLayer, boolean clock) {
 
     /** No layer draws more than this many arrows or squares: past it, they are spread further apart. */
     public static final int MAXIMUM_POINTS = 2500;
+    /** The refresh periods the menu steps through, in seconds. */
+    public static final int[] REFRESH_STEPS = {10, 15, 30, 60, 120, 300};
+    public static final int[] WIND_REFRESH_STEPS = {5, 10, 15, 30, 60};
+
+    /** Where a layer's grid goes (0.2.0). */
+    public enum Area {
+        /** Everywhere the world has been explored: every region of it saved so far. */
+        EXPLORED,
+        /** A square out to {@code radius-blocks} around spawn. */
+        SPAWN;
+
+        static Area parse(String text) {
+            return text != null && text.trim().equalsIgnoreCase("spawn") ? SPAWN : EXPLORED;
+        }
+    }
 
     /**
-     * A layer drawn on a grid around each world's spawn (0.2.0).
+     * A layer drawn on a grid (0.2.0).
      *
      * @param enabled         whether it is drawn at all
      * @param name            its name in the map's layer list
      * @param hiddenByDefault whether it starts hidden until a viewer ticks it
      * @param spacingBlocks   how far apart its arrows or squares are
-     * @param radiusBlocks    how far from spawn it reaches each way
+     * @param radiusBlocks    with {@link Area#SPAWN}, how far from spawn it reaches each way
      * @param opacity         how solid its shapes are, 0 to 1
+     * @param area            the whole explored map, or around spawn
      */
     public record Grid(boolean enabled, String name, boolean hiddenByDefault, int spacingBlocks, int radiusBlocks,
-                       double opacity) {
+                       double opacity, Area area) {
+        public Grid {
+            area = area == null ? Area.EXPLORED : area;
+        }
+
+        /** Around spawn, as before the explored map could be covered. */
+        public Grid(boolean enabled, String name, boolean hiddenByDefault, int spacingBlocks, int radiusBlocks,
+                    double opacity) {
+            this(enabled, name, hiddenByDefault, spacingBlocks, radiusBlocks, opacity, Area.SPAWN);
+        }
+
         /**
-         * The spacing actually used: the setting's, or wider where that
-         * would draw more than {@link #MAXIMUM_POINTS} across the radius.
+         * The spacing actually used around spawn: the setting's, or wider
+         * where that would draw more than {@link #MAXIMUM_POINTS} across the radius.
          */
         public int spacing() {
             int across = 2 * radiusBlocks / spacingBlocks + 1;
@@ -59,9 +87,9 @@ public record Settings(int refreshSeconds, boolean celsius, boolean stations, St
         }
 
         /**
-         * Where its arrows or squares go: the centres of a grid {@link #spacing()}
-         * apart, lined up on whole multiples of it so they stay put as spawn
-         * moves a little, out to the radius around {@code (x, z)}.
+         * Where its arrows or squares go around spawn: the centres of a grid
+         * {@link #spacing()} apart, lined up on whole multiples of it so they
+         * stay put as spawn moves a little, out to the radius around {@code (x, z)}.
          */
         public java.util.List<double[]> points(double x, double z) {
             int step = spacing();
@@ -76,24 +104,31 @@ public record Settings(int refreshSeconds, boolean celsius, boolean stations, St
     }
 
     public static Settings defaults() {
-        return new Settings(60, false, true, "Weather stations", false, new Color(0x4FA3FF), new Color(0x8A8F98),
-                new Color(0xE0A030), 0.12, true, new Color(0x3FBF7F), new Color(0xE0A030), new Color(0xE04040),
-                new Grid(true, "Wind", true, 192, 2048, 0.85), new Grid(true, "Air quality", true, 128, 2048, 0.35),
+        return new Settings(60, 15, false, true, "Weather stations", false, new Color(0x4FA3FF),
+                new Color(0x8A8F98), new Color(0xE0A030), 0.12, true, new Color(0x3FBF7F), new Color(0xE0A030),
+                new Color(0xE04040),
+                new Grid(true, "Wind", true, 192, 2048, 0.85, Area.EXPLORED),
+                new Grid(true, "Air quality", true, 128, 2048, 0.35, Area.EXPLORED),
                 true);
     }
 
     public static Settings load(ConfigurationSection config, Consumer<String> warn) {
         Settings d = defaults();
         int refresh = config.getInt("refresh-seconds", d.refreshSeconds);
-        if (refresh < 10) {
-            warn.accept("refresh-seconds must be 10 or more; using " + d.refreshSeconds + ".");
+        if (refresh < 10 || refresh > 3600) {
+            warn.accept("refresh-seconds must be 10 to 3600; using " + d.refreshSeconds + ".");
             refresh = d.refreshSeconds;
+        }
+        int windRefresh = config.getInt("wind.refresh-seconds", d.windRefreshSeconds);
+        if (windRefresh < 5 || windRefresh > 3600) {
+            warn.accept("wind.refresh-seconds must be 5 to 3600; using " + d.windRefreshSeconds + ".");
+            windRefresh = d.windRefreshSeconds;
         }
         String units = config.getString("units", "F").trim().toUpperCase(Locale.ROOT);
         if (!units.equals("F") && !units.equals("C")) warn.accept("units must be F or C; using F.");
         double opacity = opacity(config, "stations.fill-opacity", d.fillOpacity, warn);
         String name = config.getString("stations.layer-name", d.layerName);
-        return new Settings(refresh, units.equals("C"), config.getBoolean("stations.enabled", true),
+        return new Settings(refresh, windRefresh, units.equals("C"), config.getBoolean("stations.enabled", true),
                 name == null || name.isBlank() ? d.layerName : name.trim(),
                 config.getBoolean("stations.hidden-by-default", false),
                 color(config.getString("stations.colors.working"), d.working, "stations.colors.working", warn),
@@ -123,7 +158,8 @@ public record Settings(int refreshSeconds, boolean celsius, boolean stations, St
         return new Grid(config.getBoolean(path + ".enabled", fallback.enabled()),
                 name == null || name.isBlank() ? fallback.name() : name.trim(),
                 config.getBoolean(path + ".hidden-by-default", fallback.hiddenByDefault()), spacing, radius,
-                opacity(config, path + ".opacity", fallback.opacity(), warn));
+                opacity(config, path + ".opacity", fallback.opacity(), warn),
+                Area.parse(config.getString(path + ".area", fallback.area().name())));
     }
 
     private static double opacity(ConfigurationSection config, String path, double fallback, Consumer<String> warn) {
@@ -142,6 +178,19 @@ public record Settings(int refreshSeconds, boolean celsius, boolean stations, St
         return fallback;
     }
 
+    /**
+     * The first of {@code steps} (ascending) above {@code current}, or with
+     * {@code back} the last below it, wrapping round at either end.
+     */
+    static int step(int[] steps, int current, boolean back) {
+        if (back) {
+            for (int i = steps.length - 1; i >= 0; i--) if (steps[i] < current) return steps[i];
+            return steps[steps.length - 1];
+        }
+        for (int step : steps) if (step > current) return step;
+        return steps[0];
+    }
+
     public Color color(StationMarker.State state) {
         return switch (state) {
             case WORKING -> working;
@@ -150,7 +199,7 @@ public record Settings(int refreshSeconds, boolean celsius, boolean stations, St
         };
     }
 
-    /** A wind arrow's colour; a calm spot has no arrow, so it takes a switched-off station's grey. */
+    /** A wind arrow's colour; a calm spot's dot takes a switched-off station's grey. */
     public Color color(Wind.Level level) {
         return switch (level) {
             case CALM -> off;
