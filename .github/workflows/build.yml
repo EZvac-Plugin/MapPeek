@@ -20,13 +20,15 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v4
 
-      # Install Java 21 and cache the Maven dependency downloads, so later
+      # Install Java 25 and cache the Maven dependency downloads, so later
       # runs do not re-download paper-api and the EZvac API every time.
-      - name: Set up Java 21
+      # Java 25 because BlueMap's API is compiled for it; the jar is still
+      # built for Java 21 (maven.compiler.release), so MapPeek runs there too.
+      - name: Set up Java 25
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: '25'
           cache: maven
 
       # -B is "batch mode": no interactive prompts, cleaner logs.
