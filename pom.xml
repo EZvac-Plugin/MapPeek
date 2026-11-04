@@ -5,7 +5,7 @@
 
     <groupId>com.github.blade</groupId>
     <artifactId>mappeek</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
     <packaging>jar</packaging>
 
     <name>MapPeek</name>
@@ -23,7 +23,7 @@
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- EZvac API 1.7, first in EZvac BETA 1.0 Pilot 2: a weather station's coverage. -->
-        <ezvac.api.version>BETA-1.0-P2</ezvac.api.version>
+        <ezvac.api.version>BETA-1.0-P3</ezvac.api.version>
     </properties>
 
     <repositories>

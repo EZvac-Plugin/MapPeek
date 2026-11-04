@@ -16,9 +16,11 @@ import java.util.Objects;
  * @param radius   how far each way it measures, in blocks
  * @param state    working, switched off, or damaged
  * @param hover    a line of plain text for hovering
- * @param details  HTML for clicking: the label, today's weather and its lightning strikes
+ * @param details  HTML for clicking: the label, today's weather, wind and air, and its lightning strikes
+ * @param wind     its wind right now as an arrow at its centre (0.2.0); calm when it has none to show
  */
-public record StationMarker(String label, int x, int z, int radius, State state, String hover, String details) {
+public record StationMarker(String label, int x, int z, int radius, State state, String hover, String details,
+                            WindArrow wind) {
 
     /** What a station is doing, which colours its circle. */
     public enum State { WORKING, OFF, DAMAGED }
@@ -28,6 +30,7 @@ public record StationMarker(String label, int x, int z, int radius, State state,
         Objects.requireNonNull(state, "state");
         Objects.requireNonNull(hover, "hover");
         Objects.requireNonNull(details, "details");
+        Objects.requireNonNull(wind, "wind");
     }
 
     /** A station's marker, its temperatures in Celsius when {@code celsius}. */
@@ -45,6 +48,11 @@ public record StationMarker(String label, int x, int z, int radius, State state,
             details.append("<br>Today: ").append(sky(today.sky())).append(" · Hi ").append(degrees(today.highF(), celsius))
                     .append(" Lo ").append(degrees(today.lowF(), celsius));
             if (!today.note().isBlank()) details.append("<br>").append(escape(today.note()));
+            // Its wind and air right now (0.2.0, EZvac API 1.8): shown only where EZvac gives them.
+            if (station.wind().hasDirection())
+                details.append("<br>Wind: ").append(WindArrow.describe(station.wind(), celsius));
+            station.airQuality().ifPresent(air -> details.append("<br>Air: AQI ").append(air.aqi()).append(" (")
+                    .append(AirCell.bandName(air.band())).append(")"));
         } else {
             details.append("<br>").append(state == State.OFF ? "Switched off" : "Damaged: rebuild its tower");
         }
@@ -52,8 +60,11 @@ public record StationMarker(String label, int x, int z, int radius, State state,
         long strikes = station.lightningStrikes();
         if (strikes > 0) details.append("<br>Struck by lightning ").append(strikes)
                 .append(strikes == 1 ? " time" : " times");
-        return new StationMarker(station.label(), station.position().x(), station.position().z(), station.areaRadius(),
-                state, station.label() + " · weather station" + status, details.toString());
+        int x = station.position().x(), z = station.position().z();
+        WindArrow wind = WindArrow.of(state == State.WORKING ? station.wind() : com.github.blade.hvac.api.Wind.CALM,
+                x + 0.5, z + 0.5, celsius);
+        return new StationMarker(station.label(), x, z, station.areaRadius(), state,
+                station.label() + " · weather station" + status, details.toString(), wind);
     }
 
     /** {@code 60°}: whole degrees, as a station's own screen shows them. */

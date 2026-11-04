@@ -1,10 +1,17 @@
 # MapPeek: EZvac on your web map. Draws every weather station's coverage, the
-# area it measures, as a circle on squaremap.
+# area it measures, as a circle on squaremap, with an arrow of its wind; and,
+# as layers a viewer can tick, the wind and the air quality across the map.
+
+# The time of day and season at the top of the map's layer list (0.2.0), such
+# as "14:30 · Summer, day 3 of 15": the clock keeps time on its own.
+clock:
+  enabled: true
 
 # How often the map is brought up to date, in seconds (10 or more).
 refresh-seconds: 60
 
-# The temperatures in a station's details: F or C.
+# Temperatures in a station's details: F or C. Wind speeds follow: mph with F,
+# km/h with C.
 units: F
 
 stations:
@@ -21,3 +28,38 @@ stations:
     damaged: '#E0A030'
   # How solid a circle is filled, 0 to 1; its outline is always drawn.
   fill-opacity: 0.12
+
+# The wind (0.2.0). Arrows point the way it blows, longer the stronger it is;
+# a calm spot has none.
+wind:
+  # An arrow at the centre of each working weather station.
+  station-arrows: true
+  # Arrow colours, as #RRGGBB, by how strong it is.
+  colors:
+    breezy: '#3FBF7F'
+    windy: '#E0A030'
+    gale: '#E04040'
+  # The wind across the map: arrows spacing-blocks apart, out to radius-blocks
+  # from each world's spawn. At most 2,500 are drawn; past that they are spread
+  # further apart. EZvac works the wind out from the world seed, so it shows
+  # over land no one has explored too, and nothing is loaded.
+  layer:
+    enabled: true
+    layer-name: Wind
+    hidden-by-default: true
+    spacing-blocks: 192
+    radius-blocks: 2048
+    opacity: 0.85
+
+# Air quality (0.2.0): squares shaded in their US EPA AQI colour, from green
+# (Good) to maroon (Hazardous), with the AQI and pollen on hovering. It is
+# the open outdoor air: the biomes' own, the season's pollen, the rain and the
+# wind, without any smoke from buildings. Same grid rules as the wind's.
+air:
+  layer:
+    enabled: true
+    layer-name: Air quality
+    hidden-by-default: true
+    spacing-blocks: 128
+    radius-blocks: 2048
+    opacity: 0.35
