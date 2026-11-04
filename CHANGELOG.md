@@ -25,6 +25,15 @@ regions.
   turning them. Calm spots are small grey dots. It refreshes every 15 seconds
   (`wind.refresh-seconds`), more often than the rest. Hidden until a viewer
   ticks it.
+- **Wind flow (opt-in, `wind.animation`):** the wind as moving particles,
+  like a weather site's wind map, on squaremap and BlueMap, coloured by how
+  strong it blows and shown while a viewer ticks "Wind flow". It runs in the
+  viewer's browser from a small file MapPeek writes each wind refresh, and is
+  built to stay light (about half a millisecond a frame). BlueMap loads it as
+  an addon script; as squaremap has no way for addons to add to its page,
+  MapPeek adds one script line to squaremap's `index.html` (again after
+  squaremap writes a fresh one) and takes it away when switched off. Also a
+  button in `/mappeek`.
 - **An Air quality layer:** squares 128 blocks across, shaded on a smooth
   scale through the US EPA's AQI colours so neighbouring squares don't flip
   colour at a band's edge, with the AQI, PM2.5, PM10 and pollen on hovering.

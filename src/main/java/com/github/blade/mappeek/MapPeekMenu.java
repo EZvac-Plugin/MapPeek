@@ -26,7 +26,7 @@ import java.util.List;
  *
  * <pre>
  *  [ about ]  .  .  .  .  .  .  .  [ maps ]
- *  . [stations][arrows][wind][air][clock][units] .  .
+ *  . [stations][arrows][wind][air][clock][units][flow] .
  *  . [refresh][wind refresh] . [area] .  .  . [redraw]
  * </pre>
  */
@@ -34,7 +34,7 @@ final class MapPeekMenu implements Listener {
     static final String PERMISSION = "mappeek.admin";
 
     private static final int ABOUT = 0, MAPS = 8;
-    private static final int STATIONS = 10, ARROWS = 11, WIND = 12, AIR = 13, CLOCK = 14, UNITS = 15;
+    private static final int STATIONS = 10, ARROWS = 11, WIND = 12, AIR = 13, CLOCK = 14, UNITS = 15, FLOW = 16;
     private static final int REFRESH = 19, WIND_REFRESH = 20, AREA = 22, REDRAW = 25;
 
     private final MapPeekPlugin plugin;
@@ -83,6 +83,9 @@ final class MapPeekMenu implements Listener {
                 s.airLayer().hiddenByDefault(), "Squares in the AQI's colours,", "from Good to Hazardous."));
         inventory.setItem(CLOCK, toggle(Material.CLOCK, "Time and season", s.clock(), null,
                 "The time of day and EZvac's season", "at the top of the layer list."));
+        inventory.setItem(FLOW, toggle(Material.WIND_CHARGE, "Wind flow", s.windAnimation(), null,
+                "Moving particles along the wind,", "like a weather site's wind map,",
+                "on squaremap and BlueMap.", "Viewers tick Wind flow to see it."));
         inventory.setItem(UNITS, item(Material.NAME_TAG, "Units: " + (s.celsius() ? "°C and km/h" : "°F and mph"),
                 NamedTextColor.WHITE, List.of("Click for " + (s.celsius() ? "°F and mph." : "°C and km/h."))));
         inventory.setItem(REFRESH, item(Material.REPEATER, "Refresh every " + seconds(s.refreshSeconds()),
@@ -122,6 +125,7 @@ final class MapPeekMenu implements Listener {
             case AIR -> shift ? set(config, "air.layer.hidden-by-default", !s.airLayer().hiddenByDefault())
                     : set(config, "air.layer.enabled", !s.airLayer().enabled());
             case CLOCK -> set(config, "clock.enabled", !s.clock());
+            case FLOW -> set(config, "wind.animation", !s.windAnimation());
             case UNITS -> set(config, "units", s.celsius() ? "F" : "C");
             case REFRESH -> set(config, "refresh-seconds", Settings.step(Settings.REFRESH_STEPS, s.refreshSeconds(), right));
             case WIND_REFRESH -> set(config, "wind.refresh-seconds",

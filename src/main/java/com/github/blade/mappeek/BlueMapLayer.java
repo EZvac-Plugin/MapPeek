@@ -37,6 +37,11 @@ final class BlueMapLayer implements MapLayer {
     private static final String WIND = "mappeek-wind";
     private static final String AIR = "mappeek-air";
     private static final String CLOCK = "mappeek-clock";
+    /** An empty set a viewer ticks to see the wind animation (0.2.0, wind.animation). */
+    private static final String FLOW = "mappeek-wind-flow";
+    /** Where the animation's script goes in BlueMap's web app, and each map's wind for it. */
+    private static final String SCRIPT = "mappeek/wind.js";
+    private static final String FIELD = "mappeek/wind.json";
     /** How often the clock's name is brought up to date, in ticks. */
     private static final long CLOCK_TICKS = 100L;
 
@@ -45,6 +50,7 @@ final class BlueMapLayer implements MapLayer {
 
     private final BlueMapAPI api;
     private final Settings settings;
+    private final MapPeekPlugin plugin;
     /** Each world's season for its clock, and the task that keeps the clocks' names. */
     private final Map<UUID, String> seasons = new HashMap<>();
     private final BukkitTask clockTask;
@@ -52,8 +58,30 @@ final class BlueMapLayer implements MapLayer {
     private BlueMapLayer(MapPeekPlugin plugin, BlueMapAPI api, Settings settings) {
         this.api = api;
         this.settings = settings;
+        this.plugin = plugin;
         for (BlueMapMap map : api.getMaps())
             for (StationMarker.State state : StationMarker.State.values()) writeIcon(map, state);
+        // BlueMap loads addon scripts officially: the animation's goes in while it's on.
+        java.nio.file.Path script = api.getWebApp().getWebRoot().resolve(SCRIPT);
+        if (settings.windAnimation()) {
+            api.getWebApp().registerScript(SCRIPT);
+            async(() -> {
+                try {
+                    java.nio.file.Files.createDirectories(script.getParent());
+                    java.nio.file.Files.write(script, WindFlow.script());
+                } catch (IOException failure) {
+                    plugin.getLogger().warning("Couldn't add the wind animation to BlueMap: " + failure.getMessage());
+                }
+            });
+        } else {
+            async(() -> {
+                try {
+                    java.nio.file.Files.deleteIfExists(script);
+                } catch (IOException ignored) {
+                    // Not registered, so BlueMap never loads it.
+                }
+            });
+        }
         clockTask = Bukkit.getScheduler().runTaskTimer(plugin, this::tickClocks, CLOCK_TICKS, CLOCK_TICKS);
     }
 
@@ -134,13 +162,39 @@ final class BlueMapLayer implements MapLayer {
         for (BlueMapMap map : maps(world)) {
             if (arrows.isEmpty()) {
                 map.getMarkerSets().remove(WIND);
+                map.getMarkerSets().remove(FLOW);
                 continue;
             }
             MarkerSet set = new MarkerSet(grid.name(), true, grid.hiddenByDefault());
             int index = 0;
             for (WindArrow wind : arrows) set.put("wind-" + index++, arrow(wind, y, 26, grid.opacity()));
             map.getMarkerSets().put(WIND, set);
+            if (settings.windAnimation()) flow(world, map, arrows, longest);
         }
+    }
+
+    /** The wind animation (0.2.0): its switch in BlueMap's menu, and this map's wind for its script. */
+    private void flow(World world, BlueMapMap map, List<WindArrow> arrows, double longest) {
+        if (!map.getMarkerSets().containsKey(FLOW)) {
+            MarkerSet flow = new MarkerSet("Wind flow", true, true);
+            flow.setSorting(1);
+            map.getMarkerSets().put(FLOW, flow);
+        }
+        int spacing = (int) Math.round(longest / MapPeekPlugin.ARROW_SHARE);
+        byte[] field = WindFlow.field(arrows, spacing, WindFlow.colors(settings), world.getSeaLevel())
+                .getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        async(() -> {
+            try (OutputStream out = map.getAssetStorage().writeAsset(FIELD)) {
+                out.write(field);
+            } catch (IOException failure) {
+                plugin.getLogger().warning("Couldn't write the wind for BlueMap's animation: " + failure.getMessage());
+            }
+        });
+    }
+
+    private void async(Runnable work) {
+        if (plugin.isEnabled()) Bukkit.getScheduler().runTaskAsynchronously(plugin, work);
+        else work.run();
     }
 
     @Override
@@ -247,6 +301,7 @@ final class BlueMapLayer implements MapLayer {
             map.getMarkerSets().remove(WIND);
             map.getMarkerSets().remove(AIR);
             map.getMarkerSets().remove(CLOCK);
+            map.getMarkerSets().remove(FLOW);
         }
         seasons.clear();
     }

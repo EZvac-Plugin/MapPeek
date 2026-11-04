@@ -16,16 +16,22 @@ import java.util.Objects;
  * @param towardDegrees where it blows to: 0 north (-z), 90 east; NaN when calm or not known
  * @param level         how it reads
  * @param tooltip       a line of plain text: {@code Breezy 18 km/h from the W}
+ * @param speedMs       how fast it blows, m/s (for the wind animation)
  */
-public record WindArrow(double x, double z, double towardDegrees, Wind.Level level, String tooltip) {
+public record WindArrow(double x, double z, double towardDegrees, Wind.Level level, String tooltip, double speedMs) {
     public WindArrow {
         Objects.requireNonNull(level, "level");
         Objects.requireNonNull(tooltip, "tooltip");
     }
 
+    /** An arrow whose speed doesn't matter, only its level. */
+    public WindArrow(double x, double z, double towardDegrees, Wind.Level level, String tooltip) {
+        this(x, z, towardDegrees, level, tooltip, 0.0);
+    }
+
     /** A spot's wind; speeds in km/h when {@code celsius}, else mph. */
     public static WindArrow of(Wind wind, double x, double z, boolean celsius) {
-        return new WindArrow(x, z, wind.towardDegrees(), wind.level(), describe(wind, celsius));
+        return new WindArrow(x, z, wind.towardDegrees(), wind.level(), describe(wind, celsius), wind.speedMs());
     }
 
     /** {@code Calm}, or {@code Breezy 18 km/h from the W}. */

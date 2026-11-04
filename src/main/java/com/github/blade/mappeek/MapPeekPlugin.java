@@ -102,7 +102,7 @@ public final class MapPeekPlugin extends JavaPlugin {
 
     private void start() {
         settings = Settings.load(getConfig(), getLogger()::warning);
-        if (getServer().getPluginManager().isPluginEnabled("squaremap")) maps.add(new SquaremapLayer(settings));
+        if (getServer().getPluginManager().isPluginEnabled("squaremap")) maps.add(new SquaremapLayer(settings, this));
         // BlueMap's classes are only there with BlueMap installed.
         if (blueMap()) BlueMapLayer.current(this, settings).ifPresent(maps::add);
         if (maps.isEmpty() && !blueMap()) {

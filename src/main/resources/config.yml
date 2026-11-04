@@ -42,6 +42,13 @@ wind:
   refresh-seconds: 15
   # An arrow at the centre of each working weather station.
   station-arrows: true
+  # The wind as moving particles, like a weather site's wind map, on squaremap
+  # and BlueMap: a "Wind flow" layer (on BlueMap, a marker set) viewers tick.
+  # It runs in the viewer's browser and is kept light. BlueMap loads it as an
+  # addon script; squaremap has no way for addons to add to its page, so
+  # MapPeek adds one script line to squaremap's index.html, and takes it away
+  # again when this is false. Viewers with the map already open reload it once.
+  animation: false
   # Arrow colours, as #RRGGBB, by how strong it is.
   colors:
     breezy: '#3FBF7F'

@@ -30,9 +30,12 @@ final class SquaremapLayer implements MapLayer {
     private static final Key WIND = Key.of("mappeek_wind");
     private static final Key AIR = Key.of("mappeek_air_quality");
     private static final Key CLOCK = Key.of("mappeek_clock");
+    private static final Key FLOW = Key.of("mappeek_wind_flow");
 
     private final Squaremap squaremap = SquaremapProvider.get();
     private final Settings settings;
+    /** Runs file work off the main thread, and warns in the log. */
+    private final org.bukkit.plugin.Plugin plugin;
     /** Each world's layers MapPeek registered, by key. */
     private final Map<UUID, Map<Key, SimpleLayerProvider>> layers = new HashMap<>();
     /** Each world's clock, registered once. */
@@ -71,8 +74,15 @@ final class SquaremapLayer implements MapLayer {
         public java.util.Collection<Marker> getMarkers() { return List.of(); }
     }
 
-    SquaremapLayer(Settings settings) {
+    SquaremapLayer(Settings settings, org.bukkit.plugin.Plugin plugin) {
         this.settings = settings;
+        this.plugin = plugin;
+        // The wind animation's script goes in squaremap's page only while it's on (0.2.0).
+        java.nio.file.Path web = squaremap.webDir();
+        async(() -> {
+            if (settings.windAnimation()) WindFlow.install(web, plugin.getLogger()::warning);
+            else WindFlow.uninstall(web);
+        });
         // The station icons, one per state (0.2.0).
         for (StationMarker.State state : StationMarker.State.values()) {
             Key key = icon(state);
@@ -137,12 +147,14 @@ final class SquaremapLayer implements MapLayer {
     public void wind(World world, List<WindArrow> arrows, double longest) {
         if (arrows.isEmpty()) {
             drop(world, WIND);
+            drop(world, FLOW);
             return;
         }
         Settings.Grid grid = settings.windLayer();
         SimpleLayerProvider layer = layer(world, WIND, grid.name(), grid.hiddenByDefault(), 12, 260);
         if (layer == null) return;
         layer.clearMarkers();
+        if (settings.windAnimation()) flow(world, arrows, longest);
         int index = 0;
         for (WindArrow wind : arrows) {
             Marker arrow = arrow(wind, longest, grid.opacity());
@@ -172,6 +184,28 @@ final class SquaremapLayer implements MapLayer {
                     .build());
             layer.addMarker(Key.of("air_" + index++), square);
         }
+    }
+
+    /**
+     * The wind animation (0.2.0): an empty "Wind flow" layer a viewer ticks
+     * to see it, the script in squaremap's page (again, should squaremap
+     * have written a fresh one), and this world's wind for it.
+     */
+    private void flow(World world, List<WindArrow> arrows, double longest) {
+        layer(world, FLOW, "Wind flow", true, 13, 255);
+        int spacing = (int) Math.round(longest / MapPeekPlugin.ARROW_SHARE);
+        String field = WindFlow.field(arrows, spacing, WindFlow.colors(settings), world.getSeaLevel());
+        String name = WindFlow.folderName(world);
+        java.nio.file.Path web = squaremap.webDir();
+        async(() -> {
+            WindFlow.install(web, plugin.getLogger()::warning);
+            WindFlow.publish(web, name, field, plugin.getLogger()::warning);
+        });
+    }
+
+    private void async(Runnable work) {
+        if (plugin.isEnabled()) plugin.getServer().getScheduler().runTaskAsynchronously(plugin, work);
+        else work.run();
     }
 
     /** A calm spot (0.2.0): a small grey dot, so the layer never looks empty when the air is still. */

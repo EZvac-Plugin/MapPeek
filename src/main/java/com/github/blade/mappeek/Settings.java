@@ -28,11 +28,12 @@ import java.util.function.Consumer;
  * @param windLayer          the wind across the map (0.2.0)
  * @param airLayer           the air quality across the map (0.2.0)
  * @param clock              whether the layer list shows each world's time of day and season (0.2.0)
+ * @param windAnimation      whether squaremap shows the wind as moving particles, a "Wind flow" layer (0.2.0)
  */
 public record Settings(int refreshSeconds, int windRefreshSeconds, boolean celsius, boolean stations,
                        String layerName, boolean hiddenByDefault, Color working, Color off, Color damaged,
                        double fillOpacity, boolean stationArrows, Color breezy, Color windy, Color gale,
-                       Grid windLayer, Grid airLayer, boolean clock) {
+                       Grid windLayer, Grid airLayer, boolean clock, boolean windAnimation) {
 
     /** No layer draws more than this many arrows or squares: past it, they are spread further apart. */
     public static final int MAXIMUM_POINTS = 2500;
@@ -109,7 +110,7 @@ public record Settings(int refreshSeconds, int windRefreshSeconds, boolean celsi
                 new Color(0xE04040),
                 new Grid(true, "Wind", true, 192, 2048, 0.85, Area.EXPLORED),
                 new Grid(true, "Air quality", true, 128, 2048, 0.35, Area.EXPLORED),
-                true);
+                true, false);
     }
 
     public static Settings load(ConfigurationSection config, Consumer<String> warn) {
@@ -139,7 +140,7 @@ public record Settings(int refreshSeconds, int windRefreshSeconds, boolean celsi
                 color(config.getString("wind.colors.windy"), d.windy, "wind.colors.windy", warn),
                 color(config.getString("wind.colors.gale"), d.gale, "wind.colors.gale", warn),
                 grid(config, "wind.layer", d.windLayer, warn), grid(config, "air.layer", d.airLayer, warn),
-                config.getBoolean("clock.enabled", d.clock));
+                config.getBoolean("clock.enabled", d.clock), config.getBoolean("wind.animation", d.windAnimation));
     }
 
     private static Grid grid(ConfigurationSection config, String path, Grid fallback, Consumer<String> warn) {

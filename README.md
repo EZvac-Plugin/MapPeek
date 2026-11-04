@@ -16,6 +16,13 @@ your server's web map, [squaremap](https://modrinth.com/plugin/squaremap) or
   deserts, the westerlies over the plains, rain turning them. Calm spots are
   small grey dots. It's brought up to date every 15 seconds, as it gusts and
   turns.
+- **The wind in motion** (opt-in, `wind.animation`): a **Wind flow** layer of
+  particles drifting along the wind like a weather site's wind map, coloured
+  by how strong it blows, on squaremap and BlueMap. It runs in the viewer's
+  browser and takes well under a millisecond a frame. BlueMap loads it as an
+  addon script. squaremap has no way for addons to add to its page, so MapPeek
+  adds one script line to squaremap's `index.html` while it's on, and takes it
+  away again when it's off. Viewers with the map already open reload it once.
 - **Air quality across the map** (an **Air quality** layer, hidden until you
   tick it): squares 128 blocks across, shaded on a smooth scale through the US
   EPA's AQI colours, from green to maroon, with the AQI, PM2.5, PM10 and
@@ -81,6 +88,7 @@ stations:
 wind:
   refresh-seconds: 15    # the wind and the stations' arrows (5 to 3600)
   station-arrows: true   # an arrow on each working station
+  animation: false       # the Wind flow layer, on both maps (opt-in)
   colors: { breezy: '#3FBF7F', windy: '#E0A030', gale: '#E04040' }
   layer:
     enabled: true

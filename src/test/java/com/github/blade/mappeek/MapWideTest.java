@@ -98,6 +98,28 @@ class MapWideTest {
     }
 
     @Test
+    void theWindAnimationGoesInSquaremapsPageOnceAndComesOutAgain() {
+        String page = "<!doctype html>\n<html>\n    <head>\n        <title></title>\n"
+                + "      <script type=\"module\" src=\"./assets/index.js\"></script>\n    </head>\n</html>";
+        String with = WindFlow.inject(page);
+        assertTrue(with.indexOf(WindFlow.TAG) < with.indexOf("type=\"module\""), "before squaremap's own script");
+        assertEquals(with, WindFlow.inject(with), "only once");
+        assertEquals(page, WindFlow.remove(with), "and out again, leaving the page as it was");
+        assertEquals("<html>no head</html>", WindFlow.inject("<html>no head</html>"));
+    }
+
+    @Test
+    void theWindFieldGivesEachPointsWindTowardEastAndSouth() {
+        String json = WindFlow.field(List.of(
+                WindArrow.of(new Wind(10, Wind.Level.WINDY, 270), 192, -384, false),   // from the W: toward the east
+                WindArrow.of(new Wind(0.5, Wind.Level.CALM, Double.NaN), 0, 0, false)),
+                192, new String[]{"#8A8F98", "#3FBF7F", "#E0A030", "#E04040"}, 63);
+        assertTrue(json.startsWith("{\"spacing\":192,\"y\":63,\"colors\":[\"#8A8F98\",\"#3FBF7F\",\"#E0A030\",\"#E04040\"]"), json);
+        assertTrue(json.contains("[192,-384,10.00,0.00,2]"), json);
+        assertTrue(json.contains("[0,0,0.00,0.00,0]"), "no direction, no flow: " + json);
+    }
+
+    @Test
     void stationIconsAreDrawnInTheirStatesColour() {
         BufferedImage icon = StationIcon.image(new java.awt.Color(0x4FA3FF));
         assertEquals(StationIcon.SIZE, icon.getWidth());
