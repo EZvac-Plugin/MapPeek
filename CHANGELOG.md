@@ -2,6 +2,17 @@
 
 All notable changes to MapPeek are recorded here.
 
+## 0.3.0
+
+Switched from EZvac's Addons menu. Still needs EZvac BETA 1.0 Pilot 3 or
+newer (API 1.8).
+
+- **`/hvac addons` switches MapPeek on and off while the server runs**
+  (EZvac BETA 1.0 Pilot 4 and newer, API 1.9). Switched off, everything it
+  drew is taken off the maps; switched on, it is drawn again. The choice is
+  kept through restarts. On Pilot 3, which has no Addons menu, it runs as
+  before.
+
 ## 0.2.0
 
 The wind and the air on your map, BlueMap support, and a menu. Needs EZvac
