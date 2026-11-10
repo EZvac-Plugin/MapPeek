@@ -57,7 +57,10 @@ public final class MapPeekPlugin extends JavaPlugin {
         saveDefaultConfig();
         menu = new MapPeekMenu(this);
         getServer().getPluginManager().registerEvents(menu, this);
-        start();
+        // EZvac's Addons menu (API 1.9) switches MapPeek while the server runs; older EZvacs have none.
+        if (MenuSwitch.offered(ezvac.apiVersion())) active = MenuSwitch.register(ezvac, this, this::setActive);
+        if (active) start();
+        else getLogger().info("MapPeek is switched off in EZvac's Addons menu (/hvac addons): nothing is drawn.");
         // BlueMap starts after MapPeek and can reload on its own: it says when it's ready.
         if (blueMap()) BlueMapLayer.watch(this);
     }
@@ -83,11 +86,25 @@ public final class MapPeekPlugin extends JavaPlugin {
     void reload() {
         reloadConfig();
         stop();
-        start();
+        if (active) start();
+    }
+
+    private boolean active = true;
+
+    /** Whether MapPeek is switched on in EZvac's Addons menu (always, on an EZvac without one). */
+    boolean active() { return active; }
+
+    /** Switched off, everything MapPeek drew is taken off the maps; switched on, it is drawn again. */
+    private void setActive(boolean on) {
+        active = on;
+        stop();
+        if (on) start();
+        getLogger().info("MapPeek was switched " + (on ? "on" : "off") + " in EZvac's Addons menu.");
     }
 
     /** BlueMap became ready (or reloaded): draw on it too. */
     void blueMapReady(MapLayer blueMap) {
+        if (!active) return;
         maps.removeIf(map -> map.name().equals(blueMap.name()));
         maps.add(blueMap);
         refreshWind();
