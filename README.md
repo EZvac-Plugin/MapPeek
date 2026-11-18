@@ -1,9 +1,58 @@
+<div align="center">
+
 # MapPeek
 
-**EZvac on your web map.** MapPeek is an official addon for
-[EZvac](https://github.com/EZvac-Plugin/EZvac): it draws what EZvac knows onto
-your server's web map, [squaremap](https://modrinth.com/plugin/squaremap) or
-[BlueMap](https://modrinth.com/plugin/bluemap), or both at once.
+**EZvac on your web map.**<br>
+An official addon for [EZvac](https://github.com/EZvac-Plugin/EZvac), real heating, cooling and indoor climate for Paper and Purpur.
+
+[![Release](https://img.shields.io/github/v/release/EZvac-Plugin/MapPeek?label=release&color=0e7c86&logo=github&style=for-the-badge&labelColor=1f2328)](https://github.com/EZvac-Plugin/MapPeek/releases)
+[![Needs EZvac](https://img.shields.io/badge/needs%20EZvac-BETA%201.0%20P3%2B-0e7c86?style=for-the-badge&labelColor=1f2328&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZmlsbD0iI2ZmZiIgZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNOCAxYzIuNCAyLjggNC42IDUuNSA0LjYgOC4yYTQuNiA0LjYgMCAwIDEtOS4yIDBDMy40IDYuNSA1LjYgMy44IDggMXptMCA2LjZhMS43IDEuNyAwIDEgMCAwIDMuNCAxLjcgMS43IDAgMCAwIDAtMy40eiIvPjwvc3ZnPg==)](https://github.com/EZvac-Plugin/EZvac)
+[![Minecraft](https://img.shields.io/badge/Minecraft-1.21.1%2B-0e7c86?style=for-the-badge&labelColor=1f2328&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiIgc2hhcGUtcmVuZGVyaW5nPSJjcmlzcEVkZ2VzIj48cmVjdCB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIGZpbGw9IiM4YTVhM2IiLz48cmVjdCB3aWR0aD0iMTYiIGhlaWdodD0iNSIgZmlsbD0iIzZhYWEzYSIvPjxyZWN0IHg9IjIiIHk9IjUiIHdpZHRoPSIyIiBoZWlnaHQ9IjIiIGZpbGw9IiM2YWFhM2EiLz48cmVjdCB4PSI3IiB5PSI1IiB3aWR0aD0iMiIgaGVpZ2h0PSIzIiBmaWxsPSIjNmFhYTNhIi8+PHJlY3QgeD0iMTIiIHk9IjUiIHdpZHRoPSIyIiBoZWlnaHQ9IjIiIGZpbGw9IiM2YWFhM2EiLz48cmVjdCB4PSI0IiB5PSIxMCIgd2lkdGg9IjIiIGhlaWdodD0iMiIgZmlsbD0iIzZiNDMyOSIvPjxyZWN0IHg9IjEwIiB5PSIxMiIgd2lkdGg9IjIiIGhlaWdodD0iMiIgZmlsbD0iIzZiNDMyOSIvPjxyZWN0IHg9IjEyIiB5PSI4IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjYTc3NzRmIi8+PHJlY3QgeD0iMiIgeT0iMTMiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNhNzc3NGYiLz48L3N2Zz4=)](#requirements)
+[![License](https://img.shields.io/github/license/EZvac-Plugin/MapPeek?color=0e7c86&logo=opensourceinitiative&style=for-the-badge&labelColor=1f2328)](LICENSE)
+
+[![Download](https://img.shields.io/badge/Download-f69500?style=for-the-badge&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZmlsbD0iI2ZmZiIgZD0iTTcgMWgydjdsMi41LTIuNSAxLjQgMS40TDggMTEuOCAzLjEgNi45bDEuNC0xLjRMNyA4eiIvPjxwYXRoIGZpbGw9IiNmZmYiIGQ9Ik0yIDEyaDJ2MS41aDhWMTJoMnYzLjVIMnoiLz48L3N2Zz4=)](https://github.com/EZvac-Plugin/MapPeek/releases/latest)
+[![EZvac](https://img.shields.io/badge/EZvac-f69500?style=for-the-badge&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZmlsbD0iI2ZmZiIgZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNOCAxYzIuNCAyLjggNC42IDUuNSA0LjYgOC4yYTQuNiA0LjYgMCAwIDEtOS4yIDBDMy40IDYuNSA1LjYgMy44IDggMXptMCA2LjZhMS43IDEuNyAwIDEgMCAwIDMuNCAxLjcgMS43IDAgMCAwIDAtMy40eiIvPjwvc3ZnPg==)](https://github.com/EZvac-Plugin/EZvac)
+[![Website](https://img.shields.io/badge/EZvac%20website-f69500?style=for-the-badge&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHBhdGggZmlsbD0iI2ZmZiIgZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNOCAxYTcgNyAwIDEgMCAwIDE0QTcgNyAwIDAgMCA4IDF6bS0uOCAxLjZDNi40IDMuNyA1LjkgNS4zIDUuOCA3LjJIMy4xYTUgNSAwIDAgMSA0LjEtNC42em0xLjYgMGE1IDUgMCAwIDEgNC4xIDQuNmgtMi43Yy0uMS0xLjktLjYtMy41LTEuNC00LjZ6TTcuMiA3LjJINy4zYy4xLTEuNi41LTMgLjctMy42LjIuNi42IDIgLjcgMy42ek0zLjEgOC44aDIuN2MuMSAxLjkuNiAzLjUgMS40IDQuNmE1IDUgMCAwIDEtNC4xLTQuNnptNC4yIDBoMS40Yy0uMSAxLjYtLjUgMy0uNyAzLjYtLjItLjYtLjYtMi0uNy0zLjZ6bTMuNiAwaDIuN2E1IDUgMCAwIDEtNC4xIDQuNmMuOC0xLjEgMS4zLTIuNyAxLjQtNC42eiIvPjwvc3ZnPg==)](https://ezvac-plugin.github.io/EZvac/)
+
+</div>
+
+MapPeek draws what EZvac knows onto your server's web map, [squaremap](https://modrinth.com/plugin/squaremap) or [BlueMap](https://modrinth.com/plugin/bluemap), or both at once.
+
+## Features
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+**📡 Weather stations**<br>
+Each with its area, its wind arrow and a click for its forecast and air.
+
+</td>
+<td width="50%" valign="top">
+
+**🌬️ The wind across the map**<br>
+Arrows coloured and sized by strength, and an optional Wind flow layer in motion.
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+**🌫️ Air quality across the map**<br>
+The AQI on EPA colours: dust storms and spring pollen show up.
+
+</td>
+<td valign="top">
+
+**🕒 The time, the season, a menu**<br>
+A clock in the layer list, and `/mappeek` to set it all up in game.
+
+</td>
+</tr>
+</table>
+
+
+## In detail
 
 - **Weather stations:** an icon for each, coloured by what it's doing
   (working, switched off, or damaged), a circle of the area it measures, and
@@ -48,7 +97,7 @@ your server's web map, [squaremap](https://modrinth.com/plugin/squaremap) or
 
 ## Install
 
-1. Download `MapPeek-0.2.0.jar` from the
+1. Download the latest `MapPeek-*.jar` from the
    [releases](https://github.com/EZvac-Plugin/MapPeek/releases).
 2. Put it in your server's `plugins` folder, next to EZvac and your map
    plugin.
@@ -109,15 +158,20 @@ air:
     opacity: 0.35
 ```
 
-## Building
+<details>
+<summary><b>Building</b></summary>
+
+<br>
 
 ```bash
 mvn clean verify
 ```
 
-The jar is written to `target/MapPeek-0.2.0.jar`. MapPeek is built only on
+The jar is written to `target/MapPeek-<version>.jar`. MapPeek is built only on
 EZvac's public API, from [JitPack](https://jitpack.io/#EZvac-Plugin/EZvac),
 and the map plugins' own APIs.
+
+</details>
 
 ## License
 
