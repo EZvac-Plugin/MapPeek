@@ -75,7 +75,11 @@ public final class MapPeekPlugin extends JavaPlugin {
         return getServer().getPluginManager().getPlugin("BlueMap") != null;
     }
 
-    Settings settings() { return settings; }
+    /** config.yml's settings: read on first use too, so the menu works while MapPeek is switched off. */
+    Settings settings() {
+        if (settings == null) settings = Settings.load(getConfig(), getLogger()::warning);
+        return settings;
+    }
 
     /** The map plugins MapPeek draws on right now, for the menu. */
     List<String> mapNames() {
@@ -86,6 +90,7 @@ public final class MapPeekPlugin extends JavaPlugin {
     void reload() {
         reloadConfig();
         stop();
+        settings = null;
         if (active) start();
     }
 

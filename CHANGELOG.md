@@ -2,6 +2,14 @@
 
 All notable changes to MapPeek are recorded here.
 
+## 0.3.1
+
+A bug fix. Still needs EZvac BETA 1.0 Pilot 3 or newer (API 1.8).
+
+- **`/mappeek` opens its menu while MapPeek is switched off** in EZvac's
+  Addons menu. Started switched off, it failed with an error, because its
+  settings were only read when it was switched on.
+
 ## 0.3.0
 
 Switched from EZvac's Addons menu. Still needs EZvac BETA 1.0 Pilot 3 or
